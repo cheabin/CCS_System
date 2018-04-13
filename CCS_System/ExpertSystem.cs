@@ -1893,7 +1893,7 @@ namespace CCS_System
         }
         #endregion
 
-        #region 参数推荐——熔炼成分（直接显示）
+        #region 参数推荐——熔炼结果预测（直接显示）
         private void button6_Click(object sender, EventArgs e)
         {
             MeltingResult mr = new MeltingResult(commonFilePath);
@@ -3814,7 +3814,7 @@ namespace CCS_System
         }
         #endregion
 
-        #region  熔炼结果预测——用户修改推荐值之后再调用FactSage进行计算
+        #region  熔炼模拟——用户修改推荐值之后再调用FactSage进行计算
         private void predict_Click(object sender, EventArgs e)
         {
             // 获取用户修改过后的氧料比、补硅、补钙、补煤的推荐值

@@ -654,7 +654,7 @@
             this.predict.Name = "predict";
             this.predict.Size = new System.Drawing.Size(85, 32);
             this.predict.TabIndex = 107;
-            this.predict.Text = "熔炼结果预测";
+            this.predict.Text = "熔炼模拟";
             this.predict.UseVisualStyleBackColor = true;
             this.predict.Click += new System.EventHandler(this.predict_Click);
             // 
@@ -678,7 +678,7 @@
             this.button6.Name = "button6";
             this.button6.Size = new System.Drawing.Size(85, 32);
             this.button6.TabIndex = 106;
-            this.button6.Text = "熔炼成分";
+            this.button6.Text = "熔炼结果预测";
             this.button6.UseVisualStyleBackColor = true;
             this.button6.Click += new System.EventHandler(this.button6_Click);
             // 
