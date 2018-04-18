@@ -2600,13 +2600,13 @@ namespace CCS_System
         double p1 = 0.28, p2 = 0.48, p3 = 0.24, p4 = 0.00;
         // 分配系数迭代计算次数
         int partitionCalcTimes;
-        // 分配系数调整步长设定
-        double matteStep = 0.01;
-        double Fe3O4Step = 0.01;
-        // 设置冰铜调整精确度
-        double matteEPS = 0.2;
-        // 设置Fe3O4调整精度
-        double Fe3O4EPS = 0.3;
+        // 分配系数调整步长设定(2018.04从0.01改为0.02)
+        double matteStep = 0.02;
+        double Fe3O4Step = 0.02;
+        // 设置冰铜调整精确度(2018.04从0.2改为0.5)
+        double matteEPS = 0.5;
+        // 设置Fe3O4调整精度(2018.04从0.3改为0.4)
+        double Fe3O4EPS = 0.4;
         // 分配系数迭代计算函数
         private void reCalcPartition()
         {
@@ -2618,8 +2618,8 @@ namespace CCS_System
             // 重置分配系数计算器
             partitionCalcTimes = 0;
             //Debug中，原值为0.2和0.3
-            matteEPS = 0.2;
-            Fe3O4EPS = 0.3;
+            matteEPS = 0.5;
+            Fe3O4EPS = 0.4;
             getMatteFe3O4FromExcel();
             progressWindowChange("===========初始状态===========");
             progressWindowChange("当前冰铜品位：" + partitionMatte + "，原值：" + originalMatte);
@@ -2780,16 +2780,16 @@ namespace CCS_System
             progressWindowChange("当前分配系数：" + p1.ToString("P") + "，" + p2.ToString("P") + "，"
                 + p3.ToString("P") + "，" + p4.ToString("P"));
             // 调整冰铜和Fe3O4的精确度
-            if (Math.Abs(originalFe3O4 - partitionFe3O4) < 0.3 || isFe3O4Complete)
+            if (Math.Abs(originalFe3O4 - partitionFe3O4) < 0.4 || isFe3O4Complete)
             {
-                // 一旦调整到0.3之内了，就可以永久进入此分支了
+                // 一旦调整到0.4之内了，就可以永久进入此分支了
                 isFe3O4Complete = true;
-                matteEPS = 0.3;
+                matteEPS = 0.5;
             }
             else
             {
                 // 冰铜品位调整好了，但是Fe3O4还没有调整好，这时就不管冰铜品位了，允许的误差极大扩增
-                if (Math.Abs(originalMatte - partitionMatte) < 0.2) matteEPS = 10;
+                if (Math.Abs(originalMatte - partitionMatte) < 0.5) matteEPS = 10;
             }
             // 先判断冰铜是否满足
             if (Math.Abs(originalMatte - partitionMatte) < matteEPS)

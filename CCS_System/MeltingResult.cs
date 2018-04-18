@@ -199,10 +199,10 @@ namespace CCS_System
             this.textBox62.Text = cell.NumericCellValue.ToString("0.00");
             row = tb.GetRow(23);
             cell = row.GetCell(13);
-            if (cell != null)
-            {
-                this.textBox64.Text = cell.NumericCellValue.ToString("0.00");
-            }
+            //if (cell != null)
+            //{
+            //    this.textBox64.Text = cell.NumericCellValue.ToString("0.00");
+            //}
 
             row = tb.GetRow(24);
             cell = row.GetCell(1);
@@ -244,8 +244,49 @@ namespace CCS_System
             cell = row.GetCell(13);
             if(cell != null)
             {
-                this.textBox63.Text = cell.NumericCellValue.ToString("0.00");
+                this.num_Slag_viscosity.Text = cell.NumericCellValue.ToString("0.00");
             }
+
+            //2018.04 新增4个需要公式计算的量
+            // 温度写定为1205℃
+            int T = 1205;
+            // 从表格中获取公式需要的6个量
+            double SiO2 = Convert.ToDouble(textBox54.Text);
+            double CaO = Convert.ToDouble(textBox53.Text);
+            double MgO = Convert.ToDouble(textBox52.Text);
+            double Al2O3 = Convert.ToDouble(textBox51.Text);
+            double Fe3O4 = Convert.ToDouble(textBox50.Text);
+            double FeO = Convert.ToDouble(textBox56.Text);
+
+            double amount = SiO2 + CaO + MgO + Al2O3 + Fe3O4 + FeO;
+            //冰铜密度计算
+            double Copper_density;
+            Copper_density = 6.358 - 0.0763 * Convert.ToDouble(textBox31.Text) + 9.940E-3 * Convert.ToDouble(textBox33.Text) - 4.645E-4 * (T - 1000);
+            num_Copper_density.Text = Copper_density.ToString("0.00");
+            
+            //熔化温度计算
+            double Melting_T;
+            Melting_T = 1309364.70084 - 1308204.22801 * SiO2 / amount - 1307386.12801 * CaO / amount
+                - 1308265.96522 * MgO / amount - 1306842.13642 * Al2O3 / amount
+                - 1307043.30635 * Fe3O4 / amount - 1308464.79346 * FeO / amount;
+            num_Melting_T.Text = Melting_T.ToString("0.00");
+
+            //粘度计算
+            double lnA, B, Slag_viscosity;
+            lnA = -6.14568 + 63.51280 * SiO2 / amount - 225.59277 * CaO / amount
+                - 1464.28910 * MgO / amount + 556.12552 * Al2O3 / amount
+                + 111.24994 * Fe3O4 / amount - 115.78691 * FeO / amount;
+            B = 37543.65975 - 97469.98881 * SiO2 / amount + 237436.61511 * CaO / amount
+                + 1739247.42661 * MgO / amount - 688152.29915 * Al2O3 / amount
+                - 157198.36053 * Fe3O4 / amount + 96857.78733 * FeO / amount;
+            Slag_viscosity = Math.Exp(lnA + B / T);
+            num_Slag_viscosity.Text = Slag_viscosity.ToString("0.00");
+
+            //密度计算
+            double density;
+            density = 5 - 0.03 * (Convert.ToDouble(textBox44.Text) + Convert.ToDouble(textBox40.Text)* 160 / 232)  
+                - 0.02 * (Convert.ToDouble(textBox43.Text) + Convert.ToDouble(textBox42.Text) + Convert.ToDouble(textBox41.Text)) - 0.01 * (T - 1200);
+            num_density.Text = density.ToString("0.00");
         }
     }
 }
