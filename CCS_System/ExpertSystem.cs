@@ -2600,9 +2600,9 @@ namespace CCS_System
         double p1 = 0.28, p2 = 0.48, p3 = 0.24, p4 = 0.00;
         // 分配系数迭代计算次数
         int partitionCalcTimes;
-        // 分配系数调整步长设定(2018.04从0.01改为0.02)
-        double matteStep = 0.02;
-        double Fe3O4Step = 0.02;
+        // 分配系数调整步长设定(2018.04从0.01改为0.03)
+        double matteStep = 0.03;
+        double Fe3O4Step = 0.03;
         // 设置冰铜调整精确度(2018.04从0.2改为0.5)
         double matteEPS = 0.5;
         // 设置Fe3O4调整精度(2018.04从0.3改为0.4)
@@ -2704,7 +2704,7 @@ namespace CCS_System
                     // Fe3O4调整步长自适应变化
                     Fe3O4Step = Math.Abs(partitionFe3O4 - originalFe3O4) / 100;
                     // 当差值小于2的时候，步长要变得更短；小于1的时候降进行微调
-                    if (Fe3O4Step < 0.02) Fe3O4Step /= 2;
+                    if (Fe3O4Step < 0.03) Fe3O4Step /= 2;//（2018.04从0.02改成0.03）
                     // Fe3O4计算值偏高，降低N14(p1)，升高P14(p3)，变化量的百分点数值相同
                     if (partitionFe3O4 - originalFe3O4 > 0)
                     {
@@ -2722,7 +2722,7 @@ namespace CCS_System
             {
                 // 冰铜调整步长自适应变化，最后稳定在1%
                 matteStep = Math.Abs(partitionMatte - originalMatte) / 50;
-                if (matteStep < 0.01) matteStep = 0.01;
+                if (matteStep < 0.02) matteStep = 0.02;//（2018.04由0.01改为0.02）
                 // 冰铜计算值偏高，同比例降低p1,p2,p3，降低量为1%
                 if (partitionMatte - originalMatte > 0)
                 {
@@ -2871,7 +2871,7 @@ namespace CCS_System
                     // Fe3O4调整步长自适应变化
                     Fe3O4Step = Math.Abs(partitionFe3O4 - originalFe3O4) / 100;
                     // 当差值小于2的时候，步长要变得更短；小于1的时候降进行微调
-                    if (Fe3O4Step < 0.02) Fe3O4Step /= 2;
+                    if (Fe3O4Step < 0.03) Fe3O4Step /= 2;
                     // Fe3O4计算值偏高，降低N14(p1)，升高P14(p3)，变化量的百分点数值相同
                     if (partitionFe3O4 - originalFe3O4 > 0)
                     {
@@ -2889,7 +2889,7 @@ namespace CCS_System
             {
                 // 冰铜调整步长自适应变化，最后稳定在1%
                 matteStep = Math.Abs(partitionMatte - originalMatte) / 50;
-                if (matteStep < 0.01) matteStep = 0.01;
+                if (matteStep < 0.02) matteStep = 0.02;//（2018.04由0.01改为0.02）
                 // 冰铜计算值偏高，同比例降低p1,p2,p3，降低量为1%
                 if (partitionMatte - originalMatte > 0)
                 {
