@@ -263,13 +263,19 @@ namespace CCS_System
             double Copper_density;
             Copper_density = 6.358 - 0.0763 * Convert.ToDouble(textBox31.Text) + 9.940E-3 * Convert.ToDouble(textBox33.Text) - 4.645E-4 * (T - 1000);
             num_Copper_density.Text = Copper_density.ToString("0.00");
-            
+            cell = tb.GetRow(50).GetCell(1);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(Convert.ToDouble(num_Copper_density.Text));
+
             //熔化温度计算
             double Melting_T;
             Melting_T = 1309364.70084 - 1308204.22801 * SiO2 / amount - 1307386.12801 * CaO / amount
                 - 1308265.96522 * MgO / amount - 1306842.13642 * Al2O3 / amount
                 - 1307043.30635 * Fe3O4 / amount - 1308464.79346 * FeO / amount;
             num_Melting_T.Text = Melting_T.ToString("0.00");
+            cell = tb.GetRow(51).GetCell(1);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(Convert.ToDouble(num_Melting_T.Text));
 
             //粘度计算
             double lnA, B, Slag_viscosity;
@@ -281,12 +287,25 @@ namespace CCS_System
                 - 157198.36053 * Fe3O4 / amount + 96857.78733 * FeO / amount;
             Slag_viscosity = Math.Exp(lnA + B / T);
             num_Slag_viscosity.Text = Slag_viscosity.ToString("0.00");
+            cell = tb.GetRow(52).GetCell(1);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(Convert.ToDouble(num_Slag_viscosity.Text));
 
             //密度计算
             double density;
             density = 5 - 0.03 * (Convert.ToDouble(textBox44.Text) + Convert.ToDouble(textBox40.Text)* 160 / 232)  
                 - 0.02 * (Convert.ToDouble(textBox43.Text) + Convert.ToDouble(textBox42.Text) + Convert.ToDouble(textBox41.Text)) - 0.01 * (T - 1200);
             num_density.Text = density.ToString("0.00");
+            cell = tb.GetRow(53).GetCell(1);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(Convert.ToDouble(num_density.Text));
+
+            //写入Excel
+            using (FileStream fs = File.Open(tempPath, FileMode.OpenOrCreate, FileAccess.ReadWrite))
+            {
+                wk.Write(fs);
+                fs.Close();
+            }
         }
     }
 }

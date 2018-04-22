@@ -11,7 +11,6 @@ using MySql.Data;
 using MySql.Data.MySqlClient;
 using System.Data.OleDb;
 using NPOI.SS.UserModel;
-using NPOI.XSSF.UserModel;
 using NPOI.HSSF.UserModel;
 using System.Diagnostics;
 using System.Threading;
@@ -25,6 +24,8 @@ namespace CCS_System
         double[,] inPut;//数据
         int sub;//特征值数
         int length = 0;// 总长度
+        bool isbutton3 = false;//导出配料单时的判断标志
+        bool isbutton4 = false;//导出配料单时的判断标志
         #endregion
 
         #region 构造函数
@@ -64,7 +65,7 @@ namespace CCS_System
             catch (FileNotFoundException)
             {
                 MessageBox.Show("FactSage安装路径尚未设置，程序将无法完成运算！\n请进入系统后点击左上方【系统维护】中的【更改】按钮完成设置！",
-                    "提示信息",MessageBoxButtons.OK,MessageBoxIcon.Information);
+                    "提示信息", MessageBoxButtons.OK, MessageBoxIcon.Information);
             }
         }
 
@@ -130,7 +131,7 @@ namespace CCS_System
                 // 分割路径
                 string[] pathArray = filePath.Split('\\');
                 // 在第2行到n-1行，都是要cd进去的
-                for (int i = 1; i < pathArray.Length - 1; i++) 
+                for (int i = 1; i < pathArray.Length - 1; i++)
                 {
                     pathArray[i] = "cd " + pathArray[i];
                 }
@@ -143,7 +144,7 @@ namespace CCS_System
                 // 解决相同目录下直接输入盘符无法回到根目录的问题
                 extraPathArray[1] = "cd\\";
                 // 将pathArray中其余的元素写入extraPathArray
-                for(int i = 1; i < pathArray.Length;i++)
+                for (int i = 1; i < pathArray.Length; i++)
                 {
                     extraPathArray[i + 1] = pathArray[i];
                 }
@@ -160,7 +161,7 @@ namespace CCS_System
             string[] str = File.ReadAllLines("FactSageCalcData\\ISA.mac", Encoding.GetEncoding("gb2312"));
             str[3] = "OLE1 " + filename + " Sheet2					//读取的Excel文件名";
             str[4] = "OLE2 " + filename + " Sheet3					//输出的Excel文件名";
-            File.WriteAllLines("D:\\ExpertSystem\\ISA.mac",str, Encoding.GetEncoding("gb2312"));
+            File.WriteAllLines("D:\\ExpertSystem\\ISA.mac", str, Encoding.GetEncoding("gb2312"));
             progressWindowChange("ISA.mac文件重写成功！");
         }
         #endregion
@@ -283,7 +284,7 @@ namespace CCS_System
             target[1] = Convert.ToDouble(this.textBox2.Text.ToString());
             target[2] = Convert.ToDouble(this.textBox3.Text.ToString());
             target[3] = Convert.ToDouble(this.textBox4.Text.ToString());
-            
+
             // 用于存放距离
             double[] distance = new double[5000];
             // 用于对应距离数组顺序存放点编号
@@ -332,12 +333,12 @@ namespace CCS_System
                     }
                     dindex++;
                 }
-            for (int i = 0; i < dindex; i++)
-            {
+                for (int i = 0; i < dindex; i++)
+                {
                     // 结果点集（将组中点的编号转化为所有点对应的编号）
                     resultdot[i] = rdot[i];
+                }
             }
-         }
             SearchData();
         }
         #endregion
@@ -836,7 +837,7 @@ namespace CCS_System
                                         + Convert.ToDouble(productdata[0, 2]) + Convert.ToDouble(productdata[0, 3])
                                         + Convert.ToDouble(productdata[0, 4]) + Convert.ToDouble(productdata[0, 5])
                                         + Convert.ToDouble(productdata[0, 6]);
-             // 定义原始模块输入成分，用于对应该条下料情况记录
+            // 定义原始模块输入成分，用于对应该条下料情况记录
             double oriConCu = 0;
             double oriConFe = 0;
             double oriConS = 0;
@@ -847,7 +848,7 @@ namespace CCS_System
             double oriConCo = 0;
             for (int i = 8; i < 64; i += 8)
             {
-                oriConCu += Convert.ToDouble(productComponentData[0, i + 0]) * Convert.ToDouble(productdata[0, i / 8 -1]);
+                oriConCu += Convert.ToDouble(productComponentData[0, i + 0]) * Convert.ToDouble(productdata[0, i / 8 - 1]);
                 oriConFe += Convert.ToDouble(productComponentData[0, i + 1]) * Convert.ToDouble(productdata[0, i / 8 - 1]);
                 oriConS += Convert.ToDouble(productComponentData[0, i + 2]) * Convert.ToDouble(productdata[0, i / 8 - 1]);
                 oriConSiO2 += Convert.ToDouble(productComponentData[0, i + 3]) * Convert.ToDouble(productdata[0, i / 8 - 1]);
@@ -1048,6 +1049,7 @@ namespace CCS_System
         private List<string> mineralList = null;
         private void button3_Click(object sender, EventArgs e)
         {
+            isbutton3 = true;//该按钮已点击
             mineralList = new List<string>();
             mineralList.Add(this.textBox5.Text.ToString());
             mineralList.Add(this.textBox7.Text.ToString());
@@ -1066,7 +1068,7 @@ namespace CCS_System
             // 期望得到的精矿总量
             double total = Convert.ToDouble(this.textBox37.Text.ToString());
             // 存储面板上的修正下料量
-            double[] dosage = new double[] 
+            double[] dosage = new double[]
             {
                 Convert.ToDouble(Convert.ToDouble(this.textBox38.Text.ToString())),
                 Convert.ToDouble(Convert.ToDouble(this.textBox39.Text.ToString())),
@@ -1121,13 +1123,13 @@ namespace CCS_System
             set { this.comboBox1.SelectedIndex = value; }
         }
         #endregion
-        
+
         #region 参数推荐——保存推荐结果
         // 定义全局文件变量，用以和SOMA计算所需表格对应
         string commonFilePath = null;
         private void button5_Click(object sender, EventArgs e)
         {
-            if(mineraldata == null)
+            if (mineraldata == null)
             {
                 MessageBox.Show("请先填写精矿成分，再保存推荐结果！");
                 return;
@@ -1139,13 +1141,14 @@ namespace CCS_System
             // 定义真正的精矿名称和用量（同一种精矿会合并，不添加无矿）
             List<String> realMineralList = new List<string>();
             List<double> realDosage = new List<double>();
-            for (int i = 0; i < 7; i++) 
+            for (int i = 0; i < 7; i++)
             {
                 // 集合元素没有添加过，则添加到该集合中，同时添加用量
                 if (!realMineralList.Contains(mineralList[i]))
                 {
                     // 不添加无矿数据
-                    if (!"(无矿)".Equals(mineralList[i])) {
+                    if (!"(无矿)".Equals(mineralList[i]))
+                    {
                         realMineralList.Add(mineralList[i]);
                         realDosage.Add(Convert.ToDouble(dosage[i]));
                     }
@@ -1155,7 +1158,7 @@ namespace CCS_System
                 {
                     for (int j = 0; j < realMineralList.Count; j++)
                     {
-                        if(realMineralList[j].Equals(mineralList[i]))
+                        if (realMineralList[j].Equals(mineralList[i]))
                         {
                             realDosage[j] += Convert.ToDouble(dosage[i]);
                         }
@@ -1175,11 +1178,11 @@ namespace CCS_System
             // 公式自动重新计算
             tb.ForceFormulaRecalculation = true;
             IRow row = null;
-            ICell cell = null; 
+            ICell cell = null;
             // 填充Excel表
-            for (int i = 0; i < realMineralList.Count; i++) 
+            for (int i = 0; i < realMineralList.Count; i++)
             {
-                for(int j = 0; j < 7;j++)
+                for (int j = 0; j < 7; j++)
                 {
                     if (realMineralList[i].Equals(mineralList[j]))
                     {
@@ -1443,6 +1446,7 @@ namespace CCS_System
 
         private void button4_Click(object sender, EventArgs e)
         {
+            isbutton4 = true;//该按钮已点击
             // 合并精矿信息
             mergeMineralInfo();
             // 判断是否填写精矿成分，否则阻止用户使用参数推荐（2017年1月11日修改）
@@ -1482,7 +1486,7 @@ namespace CCS_System
             }
         }
         #endregion
-    
+
         #region 参数推荐——BackgroundWorker相关工作
         // BackGroundWorker的工作执行代码
         private void bw_DoWork(object sender, DoWorkEventArgs e)
@@ -1548,7 +1552,7 @@ namespace CCS_System
 
         private void bw_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
-            if(currentitems == totalitems)
+            if (currentitems == totalitems)
             {
                 progressWindowChange("所有精矿物相全部计算完成！");
                 ExportProcessToExcel();
@@ -1677,7 +1681,7 @@ namespace CCS_System
                 cell.SetCellValue(m.comp_S2);
                 i++;
             }
-            for (int j = i; j < 17; j++) 
+            for (int j = i; j < 17; j++)
             {
                 row = tb.GetRow(j);
                 row.GetCell(0).SetCellType(CellType.Blank);
@@ -1898,6 +1902,8 @@ namespace CCS_System
         {
             MeltingResult mr = new MeltingResult(commonFilePath);
             mr.Show();
+            if (isbutton3 && isbutton4)
+                this.Export_file.Enabled = true;
         }
         #endregion
 
@@ -2057,7 +2063,7 @@ namespace CCS_System
         }
 
         // 单独修改Excel文件的氧料比和硅铁比的推荐值，用于迭代计算
-        private void ModifyExcelFile(double OxyRatio,double AddSi)
+        private void ModifyExcelFile(double OxyRatio, double AddSi)
         {
             string tempPath = commonFilePath;
             HSSFWorkbook wk = null;
@@ -2430,11 +2436,11 @@ namespace CCS_System
             {
                 for (int j = 0; j < 10; j++)
                 {
-                    if(j==0)
+                    if (j == 0)
                     {
                         tmpMineralData[i, j] = storenum[i];
                     }
-                    else if (j==1)
+                    else if (j == 1)
                     {
                         tmpMineralData[i, j] = mineralList[i];
                     }
@@ -2600,9 +2606,9 @@ namespace CCS_System
         double p1 = 0.28, p2 = 0.48, p3 = 0.24, p4 = 0.00;
         // 分配系数迭代计算次数
         int partitionCalcTimes;
-        // 分配系数调整步长设定(2018.04从0.01改为0.03)
+        // 分配系数调整步长设定(2018.04从0.01改为0.03和0.035)
         double matteStep = 0.03;
-        double Fe3O4Step = 0.03;
+        double Fe3O4Step = 0.035;
         // 设置冰铜调整精确度(2018.04从0.2改为0.5)
         double matteEPS = 0.5;
         // 设置Fe3O4调整精度(2018.04从0.3改为0.4)
@@ -2694,7 +2700,7 @@ namespace CCS_System
                         odcConnection.Close();
                     }
 
-                    MessageBox.Show("分配系数保存成功:"+ productdata[flag, 17]);
+                    MessageBox.Show("分配系数保存成功:" + productdata[flag, 17]);
                     // 解禁关闭窗体按钮
                     calcprogress.enabledCloseButton();
                     return;
@@ -2704,7 +2710,7 @@ namespace CCS_System
                     // Fe3O4调整步长自适应变化
                     Fe3O4Step = Math.Abs(partitionFe3O4 - originalFe3O4) / 100;
                     // 当差值小于2的时候，步长要变得更短；小于1的时候降进行微调
-                    if (Fe3O4Step < 0.03) Fe3O4Step /= 2;//（2018.04从0.02改成0.03）
+                    if (Fe3O4Step < 0.03) Fe3O4Step /= 2;//（2018.04从Fe3O4Step /= 2 改为Fe3O4Step = 0.02）
                     // Fe3O4计算值偏高，降低N14(p1)，升高P14(p3)，变化量的百分点数值相同
                     if (partitionFe3O4 - originalFe3O4 > 0)
                     {
@@ -2737,7 +2743,7 @@ namespace CCS_System
                     p2 *= (1 + matteStep);
                     p3 *= (1 + matteStep);
                     p4 = (1 - p1 - p2 - p3) / 2;
-                    if (p4 < 0) 
+                    if (p4 < 0)
                     {
                         progressWindowChange("本次分区分配系数调整后，总和将超过100%，计算已强制终止！");
                         progressWindowChange("===========计算结束===========");
@@ -3217,6 +3223,7 @@ namespace CCS_System
             // 改变当前完成精矿计数（2016.11.24）
             addCurrentItems();
         }
+
         private void calc_CHIBULUMA()
         {
             // 局部变量定义
@@ -3723,7 +3730,7 @@ namespace CCS_System
             // 模拟值-实际值
             double DiffCu = soma.yfit[0] - soma.yreal[0];
             // 拟合完成后，若Cu偏高，则降Cu2(OH)2CO3（降的量为差值*111/64），若偏低，则增Cu2(OH)2CO3物相的量（增的量为差值*111/64）
-            BOLO.comp_Cu2_OH_2CO3 -= DiffCu *111 / 64;
+            BOLO.comp_Cu2_OH_2CO3 -= DiffCu * 111 / 64;
             k[5] = BOLO.comp_Cu2_OH_2CO3;
             double DiffS = soma.yfit[2] - soma.yreal[2];
             // 若S偏高，则降FeS2的量（降的量为差值 * 120 / 64），若S偏低，则增加S2（增量为差值）
@@ -3898,6 +3905,388 @@ namespace CCS_System
                 wk.Write(fs);
                 fs.Close();
             }
+        }
+        #endregion
+
+        #region  导出配料单（2018.04添加）
+        public static string SelectPath()
+        {
+            string path = string.Empty;
+            FolderBrowserDialog fbd = new FolderBrowserDialog();
+            if (fbd.ShowDialog() == DialogResult.OK)
+            {
+                path = fbd.SelectedPath;
+            }
+            return path;
+        }
+        private void Export_file_Click(object sender, EventArgs e)
+        {
+            //复制配料单模板
+            string id = this.comboBox1.Text.ToString().Split('等')[0];
+            string name = id + "-配料单.xls";
+            string LocalFile = Thread.GetDomain().BaseDirectory + "配料单模板.xls";//要复制的文件路径
+            string SaveFile = SelectPath() + "\\" + name;//指定存储的路径
+
+            if (File.Exists(LocalFile))//必须判断要复制的文件是否存在
+            {
+                File.Copy(LocalFile, SaveFile, true);//三个参数分别是源文件路径，存储路径，若存储路径有相同文件是否替换
+            }
+
+
+            //打开文件
+            HSSFWorkbook wk = null;
+            using (FileStream fs = File.Open(SaveFile, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            {
+                wk = new HSSFWorkbook(fs);
+                fs.Close();
+            }
+            ISheet tb = wk.GetSheetAt(0);
+            IRow row = null;
+            ICell cell = null;
+
+            cell = tb.GetRow(1).GetCell(1);
+            cell.SetCellType(CellType.Blank);
+            cell.SetCellValue(DateTime.Now.ToString());
+
+            cell = tb.GetRow(1).GetCell(3);
+            cell.SetCellType(CellType.Blank);
+            cell.SetCellValue(id);
+
+
+            //【上部】精矿+数据
+            for (int i = 0; i < 7; i++)
+            {
+                row = tb.GetRow(i + 3);
+                for (int j = 0; j < 9; j++)
+                {
+                    cell = row.GetCell(j);
+                    cell.SetCellType(CellType.Blank);
+                    cell.SetCellValue(Mdata[i, j + 1]);
+                }
+            }
+
+            //【上部】总成分
+            row = tb.GetRow(10);
+            cell = row.GetCell(1);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(Convert.ToDouble(this.textBox46.Text));
+            cell = row.GetCell(2);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(Convert.ToDouble(this.textBox47.Text));
+            cell = row.GetCell(3);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(Convert.ToDouble(this.textBox48.Text));
+            cell = row.GetCell(4);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(Convert.ToDouble(this.textBox49.Text));
+            cell = row.GetCell(5);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(Convert.ToDouble(this.textBox50.Text));
+            cell = row.GetCell(6);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(Convert.ToDouble(this.textBox51.Text));
+            cell = row.GetCell(7);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(Convert.ToDouble(this.textBox52.Text));
+            cell = row.GetCell(8);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(Convert.ToDouble(this.textBox53.Text));
+
+            //【中部】初始参数——精矿下料量、富氧浓度、氧气纯度、喷枪端压
+            cell = tb.GetRow(12).GetCell(1);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(Convert.ToDouble(this.textBox25.Text));
+            cell = tb.GetRow(13).GetCell(1);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(Convert.ToDouble(this.textBox55.Text));
+            cell = tb.GetRow(14).GetCell(1);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(Convert.ToDouble(this.textBox54.Text));
+            cell = tb.GetRow(15).GetCell(1);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(Convert.ToDouble(this.textBox23.Text));
+
+            //【中部】目标参数——冰铜品位（%）、Fe3O4、SiO2/Fe、SiO2/CaO
+            cell = tb.GetRow(12).GetCell(3);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(Convert.ToDouble(this.textBox1.Text));
+            cell = tb.GetRow(13).GetCell(3);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(Convert.ToDouble(this.textBox2.Text));
+            cell = tb.GetRow(14).GetCell(3);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(Convert.ToDouble(this.textBox3.Text));
+            cell = tb.GetRow(15).GetCell(3);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(Convert.ToDouble(this.textBox4.Text));
+
+            //【中部】推荐参数——氧料比、风量、氧气流量、补硅、补钙、补煤
+            cell = tb.GetRow(12).GetCell(5);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(Convert.ToDouble(this.textBox65.Text));
+            cell = tb.GetRow(13).GetCell(5);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(Convert.ToDouble(this.textBox63.Text));
+            cell = tb.GetRow(14).GetCell(5);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(Convert.ToDouble(this.textBox62.Text));
+            cell = tb.GetRow(15).GetCell(5);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(Convert.ToDouble(this.textBox61.Text));
+            cell = tb.GetRow(16).GetCell(5);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(Convert.ToDouble(this.textBox60.Text));
+            cell = tb.GetRow(17).GetCell(5);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(Convert.ToDouble(this.textBox58.Text));
+
+            //【中部】预测值——冰铜品位（%）、Fe3O4、SiO2/Fe、SiO2/CaO
+            cell = tb.GetRow(12).GetCell(7);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(Convert.ToDouble(this.textBox67.Text));
+            cell = tb.GetRow(13).GetCell(7);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(Convert.ToDouble(this.textBox68.Text));
+            cell = tb.GetRow(14).GetCell(7);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(Convert.ToDouble(this.textBox69.Text));
+            cell = tb.GetRow(15).GetCell(7);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(Convert.ToDouble(this.textBox70.Text));
+
+            //打开参数推荐文件，从里面选取需要的数据复制到配料单
+            HSSFWorkbook wk2 = null;
+            string path = "D:\\ExpertSystem\\" + id + ".xls";
+
+            using (FileStream fs = File.Open(path, FileMode.Open, FileAccess.Read, FileShare.ReadWrite))
+            {
+                wk2 = new HSSFWorkbook(fs);
+                fs.Close();
+            }
+            ISheet tb2 = wk2.GetSheetAt(3);
+            //【下部】——气体
+            row = tb.GetRow(24);
+            cell = row.GetCell(1);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(4).GetCell(2).NumericCellValue);
+            cell = row.GetCell(2);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(4).GetCell(3).NumericCellValue);
+            cell = row.GetCell(3);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(4).GetCell(4).NumericCellValue);
+            cell = row.GetCell(4);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(4).GetCell(5).NumericCellValue);
+            cell = row.GetCell(5);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(4).GetCell(6).NumericCellValue);
+            cell = row.GetCell(6);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(4).GetCell(7).NumericCellValue);
+            cell = row.GetCell(7);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(4).GetCell(8).NumericCellValue);
+            cell = row.GetCell(8);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(4).GetCell(9).NumericCellValue);
+            cell = row.GetCell(9);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(4).GetCell(10).NumericCellValue);
+            cell = row.GetCell(10);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(4).GetCell(11).NumericCellValue);
+
+            row = tb.GetRow(25);
+            cell = row.GetCell(1);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(5).GetCell(2).NumericCellValue);
+            cell = row.GetCell(2);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(5).GetCell(3).NumericCellValue);
+            cell = row.GetCell(3);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(5).GetCell(4).NumericCellValue);
+            cell = row.GetCell(4);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(5).GetCell(5).NumericCellValue);
+            cell = row.GetCell(5);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(5).GetCell(6).NumericCellValue);
+            cell = row.GetCell(6);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(5).GetCell(7).NumericCellValue);
+            cell = row.GetCell(7);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(5).GetCell(8).NumericCellValue);
+            cell = row.GetCell(8);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(5).GetCell(9).NumericCellValue);
+            cell = row.GetCell(9);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(5).GetCell(10).NumericCellValue);
+            cell = row.GetCell(10);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(5).GetCell(11).NumericCellValue);
+
+            row = tb.GetRow(26);
+            cell = row.GetCell(1);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(6).GetCell(2).NumericCellValue);
+            cell = row.GetCell(2);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(6).GetCell(3).NumericCellValue);
+            cell = row.GetCell(3);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(6).GetCell(4).NumericCellValue);
+            cell = row.GetCell(4);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(6).GetCell(5).NumericCellValue);
+            cell = row.GetCell(5);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(6).GetCell(6).NumericCellValue);
+            cell = row.GetCell(6);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(6).GetCell(7).NumericCellValue);
+            cell = row.GetCell(7);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(6).GetCell(8).NumericCellValue);
+            cell = row.GetCell(8);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(6).GetCell(9).NumericCellValue);
+            cell = row.GetCell(9);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(6).GetCell(10).NumericCellValue);
+            cell = row.GetCell(10);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(6).GetCell(11).NumericCellValue);
+            //冰铜
+            row = tb.GetRow(28);
+            cell = row.GetCell(1);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(9).GetCell(1).NumericCellValue);
+            cell = row.GetCell(2);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(9).GetCell(10).NumericCellValue);
+            cell = row.GetCell(3);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(9).GetCell(11).NumericCellValue);
+            cell = row.GetCell(4);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(9).GetCell(12).NumericCellValue);
+
+            row = tb.GetRow(29);
+            cell = row.GetCell(1);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(10).GetCell(1).NumericCellValue);
+            cell = row.GetCell(2);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(10).GetCell(10).NumericCellValue);
+            cell = row.GetCell(3);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(10).GetCell(11).NumericCellValue);
+            cell = row.GetCell(4);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(10).GetCell(12).NumericCellValue);
+
+            cell = tb.GetRow(30).GetCell(1);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(50).GetCell(1).NumericCellValue);
+
+            //熔渣
+            row = tb.GetRow(32);
+            cell = row.GetCell(1);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(23).GetCell(1).NumericCellValue);
+            cell = row.GetCell(2);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(23).GetCell(2).NumericCellValue);
+            cell = row.GetCell(3);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(23).GetCell(3).NumericCellValue);
+            cell = row.GetCell(4);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(23).GetCell(4).NumericCellValue);
+            cell = row.GetCell(5);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(23).GetCell(5).NumericCellValue);
+            cell = row.GetCell(6);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(23).GetCell(6).NumericCellValue);
+            cell = row.GetCell(7);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(23).GetCell(7).NumericCellValue);
+            cell = row.GetCell(8);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(23).GetCell(8).NumericCellValue);
+            cell = row.GetCell(9);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(23).GetCell(9).NumericCellValue);
+            cell = row.GetCell(10);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(23).GetCell(10).NumericCellValue);
+            cell = row.GetCell(11);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(23).GetCell(11).NumericCellValue);
+            cell = row.GetCell(12);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(23).GetCell(12).NumericCellValue);
+
+            row = tb.GetRow(33);
+            cell = row.GetCell(1);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(24).GetCell(1).NumericCellValue);
+            cell = row.GetCell(2);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(24).GetCell(2).NumericCellValue);
+            cell = row.GetCell(3);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(24).GetCell(3).NumericCellValue);
+            cell = row.GetCell(4);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(24).GetCell(4).NumericCellValue);
+            cell = row.GetCell(5);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(24).GetCell(5).NumericCellValue);
+            cell = row.GetCell(6);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(24).GetCell(6).NumericCellValue);
+            cell = row.GetCell(7);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(24).GetCell(7).NumericCellValue);
+            cell = row.GetCell(8);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(24).GetCell(8).NumericCellValue);
+            cell = row.GetCell(9);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(24).GetCell(9).NumericCellValue);
+            cell = row.GetCell(10);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(24).GetCell(10).NumericCellValue);
+            cell = row.GetCell(11);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(24).GetCell(11).NumericCellValue);
+            cell = row.GetCell(12);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(24).GetCell(12).NumericCellValue);
+
+            cell = tb.GetRow(34).GetCell(1);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(51).GetCell(1).NumericCellValue);
+            cell = tb.GetRow(35).GetCell(1);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(52).GetCell(1).NumericCellValue);
+            cell = tb.GetRow(36).GetCell(1);
+            cell.SetCellType(CellType.Numeric);
+            cell.SetCellValue(tb2.GetRow(53).GetCell(1).NumericCellValue);
+
+            using (FileStream fs = File.Open(SaveFile, FileMode.OpenOrCreate, FileAccess.ReadWrite))
+            {
+                wk.Write(fs);
+                fs.Close();
+                MessageBox.Show("配料单导出成功！");
+            }
+
         }
         #endregion
     }

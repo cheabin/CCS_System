@@ -68,6 +68,7 @@
             this.label41 = new System.Windows.Forms.Label();
             this.button8 = new System.Windows.Forms.Button();
             this.groupBox3 = new System.Windows.Forms.GroupBox();
+            this.Export_file = new System.Windows.Forms.Button();
             this.predict = new System.Windows.Forms.Button();
             this.button4 = new System.Windows.Forms.Button();
             this.button6 = new System.Windows.Forms.Button();
@@ -576,6 +577,7 @@
             // 
             // groupBox3
             // 
+            this.groupBox3.Controls.Add(this.Export_file);
             this.groupBox3.Controls.Add(this.predict);
             this.groupBox3.Controls.Add(this.button4);
             this.groupBox3.Controls.Add(this.button6);
@@ -646,6 +648,17 @@
             this.groupBox3.TabIndex = 54;
             this.groupBox3.TabStop = false;
             this.groupBox3.Text = "配矿推荐（输出数据）";
+            // 
+            // Export_file
+            // 
+            this.Export_file.Enabled = false;
+            this.Export_file.Location = new System.Drawing.Point(52, 617);
+            this.Export_file.Name = "Export_file";
+            this.Export_file.Size = new System.Drawing.Size(207, 24);
+            this.Export_file.TabIndex = 108;
+            this.Export_file.Text = "导出配料单";
+            this.Export_file.UseVisualStyleBackColor = true;
+            this.Export_file.Click += new System.EventHandler(this.Export_file_Click);
             // 
             // predict
             // 
@@ -1258,9 +1271,9 @@
             this.groupBox4.Controls.Add(this.label17);
             this.groupBox4.Controls.Add(this.label15);
             this.groupBox4.Controls.Add(this.textBox21);
-            this.groupBox4.Location = new System.Drawing.Point(21, 401);
+            this.groupBox4.Location = new System.Drawing.Point(21, 393);
             this.groupBox4.Name = "groupBox4";
-            this.groupBox4.Size = new System.Drawing.Size(238, 240);
+            this.groupBox4.Size = new System.Drawing.Size(238, 206);
             this.groupBox4.TabIndex = 60;
             this.groupBox4.TabStop = false;
             this.groupBox4.Text = "技术参数";
@@ -1268,10 +1281,10 @@
             // button7
             // 
             this.button7.Enabled = false;
-            this.button7.Location = new System.Drawing.Point(73, 182);
+            this.button7.Location = new System.Drawing.Point(73, 161);
             this.button7.Margin = new System.Windows.Forms.Padding(2);
             this.button7.Name = "button7";
-            this.button7.Size = new System.Drawing.Size(111, 40);
+            this.button7.Size = new System.Drawing.Size(111, 31);
             this.button7.TabIndex = 107;
             this.button7.Text = "修正结果";
             this.button7.UseVisualStyleBackColor = true;
@@ -1744,5 +1757,6 @@
         private System.Windows.Forms.Button button8;
         private System.Windows.Forms.Timer timer1;
         private System.Windows.Forms.Button predict;
+        private System.Windows.Forms.Button Export_file;
     }
 }
