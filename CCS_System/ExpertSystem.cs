@@ -2711,6 +2711,7 @@ namespace CCS_System
                     Fe3O4Step = Math.Abs(partitionFe3O4 - originalFe3O4) / 100;
                     // 当差值小于2的时候，步长要变得更短；小于1的时候降进行微调
                     if (Fe3O4Step < 0.03) Fe3O4Step /= 2;//（2018.04从Fe3O4Step /= 2 改为Fe3O4Step = 0.02）
+                    if(Fe3O4Step < 0.01) Fe3O4Step =0.01;
                     // Fe3O4计算值偏高，降低N14(p1)，升高P14(p3)，变化量的百分点数值相同
                     if (partitionFe3O4 - originalFe3O4 > 0)
                     {
@@ -2878,6 +2879,7 @@ namespace CCS_System
                     Fe3O4Step = Math.Abs(partitionFe3O4 - originalFe3O4) / 100;
                     // 当差值小于2的时候，步长要变得更短；小于1的时候降进行微调
                     if (Fe3O4Step < 0.03) Fe3O4Step /= 2;
+                    if (Fe3O4Step < 0.01) Fe3O4Step = 0.01;
                     // Fe3O4计算值偏高，降低N14(p1)，升高P14(p3)，变化量的百分点数值相同
                     if (partitionFe3O4 - originalFe3O4 > 0)
                     {
