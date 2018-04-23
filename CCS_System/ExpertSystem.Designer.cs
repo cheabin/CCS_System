@@ -1286,7 +1286,7 @@
             this.button7.Name = "button7";
             this.button7.Size = new System.Drawing.Size(111, 31);
             this.button7.TabIndex = 107;
-            this.button7.Text = "修正结果";
+            this.button7.Text = "参数修正";
             this.button7.UseVisualStyleBackColor = true;
             this.button7.Click += new System.EventHandler(this.button7_Click);
             // 

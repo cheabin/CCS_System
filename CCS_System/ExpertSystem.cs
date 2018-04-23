@@ -2606,9 +2606,9 @@ namespace CCS_System
         double p1 = 0.28, p2 = 0.48, p3 = 0.24, p4 = 0.00;
         // 分配系数迭代计算次数
         int partitionCalcTimes;
-        // 分配系数调整步长设定(2018.04从0.01改为0.03和0.035)
+        // 分配系数调整步长设定(2018.04从0.01改为0.03和0.03)
         double matteStep = 0.03;
-        double Fe3O4Step = 0.035;
+        double Fe3O4Step = 0.03;
         // 设置冰铜调整精确度(2018.04从0.2改为0.5)
         double matteEPS = 0.5;
         // 设置Fe3O4调整精度(2018.04从0.3改为0.4)
