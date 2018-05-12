@@ -273,7 +273,7 @@ namespace CCS_System
                 - 1308265.96522 * MgO / amount - 1306842.13642 * Al2O3 / amount
                 - 1307043.30635 * Fe3O4 / amount - 1308464.79346 * FeO / amount;
             num_Melting_T.Text = Melting_T.ToString("0.00");
-            cell = tb.GetRow(51).GetCell(1);
+            cell = tb.GetRow(53).GetCell(1);
             cell.SetCellType(CellType.Numeric);
             cell.SetCellValue(Convert.ToDouble(num_Melting_T.Text));
 
@@ -287,7 +287,7 @@ namespace CCS_System
                 - 157198.36053 * Fe3O4 / amount + 96857.78733 * FeO / amount;
             Slag_viscosity = Math.Exp(lnA + B / T);
             num_Slag_viscosity.Text = Slag_viscosity.ToString("0.00");
-            cell = tb.GetRow(52).GetCell(1);
+            cell = tb.GetRow(51).GetCell(1);
             cell.SetCellType(CellType.Numeric);
             cell.SetCellValue(Convert.ToDouble(num_Slag_viscosity.Text));
 
@@ -296,7 +296,7 @@ namespace CCS_System
             density = 5 - 0.03 * (Convert.ToDouble(textBox44.Text) + Convert.ToDouble(textBox40.Text)* 160 / 232)  
                 - 0.02 * (Convert.ToDouble(textBox43.Text) + Convert.ToDouble(textBox42.Text) + Convert.ToDouble(textBox41.Text)) - 0.01 * (T - 1200);
             num_density.Text = density.ToString("0.00");
-            cell = tb.GetRow(53).GetCell(1);
+            cell = tb.GetRow(52).GetCell(1);
             cell.SetCellType(CellType.Numeric);
             cell.SetCellValue(Convert.ToDouble(num_density.Text));
 

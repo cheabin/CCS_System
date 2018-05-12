@@ -14,6 +14,7 @@ using NPOI.SS.UserModel;
 using NPOI.HSSF.UserModel;
 using System.Diagnostics;
 using System.Threading;
+using System.Collections;
 
 namespace CCS_System
 {
@@ -24,8 +25,6 @@ namespace CCS_System
         double[,] inPut;//数据
         int sub;//特征值数
         int length = 0;// 总长度
-        bool isbutton3 = false;//导出配料单时的判断标志
-        bool isbutton4 = false;//导出配料单时的判断标志
         #endregion
 
         #region 构造函数
@@ -1049,7 +1048,6 @@ namespace CCS_System
         private List<string> mineralList = null;
         private void button3_Click(object sender, EventArgs e)
         {
-            isbutton3 = true;//该按钮已点击
             mineralList = new List<string>();
             mineralList.Add(this.textBox5.Text.ToString());
             mineralList.Add(this.textBox7.Text.ToString());
@@ -1251,9 +1249,10 @@ namespace CCS_System
         /**********************下面开始是物相计算和热力学计算必须的代码**********************/
 
         #region 全局变量
-        // 定义12种精矿
+        // 定义15种精矿
         private Mineral LUANSHYA = null, KANSANSHI = null, LUMWANA = null, CHIBULUMA = null, ENRC = null,
-            TF = null, COLD = null, REVERTS = null, LUBAMBE = null, NFCA = null, BOLO = null, CCS = null;
+            TF = null, COLD = null, REVERTS = null, LUBAMBE = null, NFCA = null, BOLO = null, CCS = null,
+            KALUMBILA = null, SCM = null, HRC = null, GREATSTONE = null;
         // 定义石英砂，石灰石，碳
         private Mineral LimeStone = new Mineral();
         private Mineral QuartzSand = new Mineral();
@@ -1432,6 +1431,42 @@ namespace CCS_System
                                 AllMines.Add(CCS);
                                 MinesName.Add("CCS");
                             }
+                            if ("KALUMBILA".Equals(realMineralList[j]))
+                            {
+                                KALUMBILA = new Mineral(Double.Parse(mineraldata[i, 2]), Double.Parse(mineraldata[i, 3]),
+                                   Double.Parse(mineraldata[i, 4]), Double.Parse(mineraldata[i, 5]), Double.Parse(mineraldata[i, 6]),
+                                   Double.Parse(mineraldata[i, 7]), Double.Parse(mineraldata[i, 8]));
+                                KALUMBILA.dosage = realDosage[j];
+                                AllMines.Add(KALUMBILA);
+                                MinesName.Add("KALUMBILA");
+                            }
+                            if ("SCM".Equals(realMineralList[j]))
+                            {
+                                SCM = new Mineral(Double.Parse(mineraldata[i, 2]), Double.Parse(mineraldata[i, 3]),
+                                   Double.Parse(mineraldata[i, 4]), Double.Parse(mineraldata[i, 5]), Double.Parse(mineraldata[i, 6]),
+                                   Double.Parse(mineraldata[i, 7]), Double.Parse(mineraldata[i, 8]));
+                                SCM.dosage = realDosage[j];
+                                AllMines.Add(SCM);
+                                MinesName.Add("SCM");
+                            }
+                            if ("HRC".Equals(realMineralList[j]))
+                            {
+                                HRC = new Mineral(Double.Parse(mineraldata[i, 2]), Double.Parse(mineraldata[i, 3]),
+                                   Double.Parse(mineraldata[i, 4]), Double.Parse(mineraldata[i, 5]), Double.Parse(mineraldata[i, 6]),
+                                   Double.Parse(mineraldata[i, 7]), Double.Parse(mineraldata[i, 8]));
+                                HRC.dosage = realDosage[j];
+                                AllMines.Add(HRC);
+                                MinesName.Add("HRC");
+                            }
+                            if ("GREATSTONE".Equals(realMineralList[j]))
+                            {
+                                GREATSTONE = new Mineral(Double.Parse(mineraldata[i, 2]), Double.Parse(mineraldata[i, 3]),
+                                   Double.Parse(mineraldata[i, 4]), Double.Parse(mineraldata[i, 5]), Double.Parse(mineraldata[i, 6]),
+                                   Double.Parse(mineraldata[i, 7]), Double.Parse(mineraldata[i, 8]));
+                                GREATSTONE.dosage = realDosage[j];
+                                AllMines.Add(GREATSTONE);
+                                MinesName.Add("GREATSTONE");
+                            }
                             break;
                         }
                     }
@@ -1446,7 +1481,6 @@ namespace CCS_System
 
         private void button4_Click(object sender, EventArgs e)
         {
-            isbutton4 = true;//该按钮已点击
             // 合并精矿信息
             mergeMineralInfo();
             // 判断是否填写精矿成分，否则阻止用户使用参数推荐（2017年1月11日修改）
@@ -1540,6 +1574,18 @@ namespace CCS_System
             if ("CCS".Equals(s))
             {
                 calc_CCS();
+            }
+            if ("KALUMBILA".Equals(s))
+            {
+                calc_KALUMBILA();
+            }
+            if ("SCM".Equals(s))
+            {
+                calc_SCM();
+            }
+            if ("HRC".Equals(s))
+            {
+                calc_HRC();
             }
             bw.ReportProgress(currentitems, s);
         }
@@ -1902,8 +1948,7 @@ namespace CCS_System
         {
             MeltingResult mr = new MeltingResult(commonFilePath);
             mr.Show();
-            if (isbutton3 && isbutton4)
-                this.Export_file.Enabled = true;
+            this.Export_file.Enabled = true;
         }
         #endregion
 
@@ -1919,6 +1964,12 @@ namespace CCS_System
         double suggestAddCa = 0;
         double suggestAddCoal = 0;
         int ReCalcTimes = 0;
+        // 防止死循环
+        ArrayList curMatteProcess = new ArrayList();
+        ArrayList curSiO2_FeProcess = new ArrayList();
+        //步长
+        double curSiO2_FeStep = 10;
+        double curMatteStep = 2.5;
         private void button7_Click(object sender, EventArgs e)
         {
             ReCalcTimes = 0;
@@ -1941,10 +1992,13 @@ namespace CCS_System
             progressWindowChange("当前硅铁比：" + curSiO2_Fe + "，目标值：" + targetSiO2_Fe);
             progressWindowChange("当前氧料比：" + suggestOxyRatio);
             progressWindowChange("当前补硅：" + suggestAddSi);
-            if (Math.Abs(targetMatte - curMatte) < 0.2)
+
+            curMatteProcess.Add(curMatte);
+            curSiO2_FeProcess.Add(curSiO2_Fe);
+            if (Math.Abs(Math.Round((decimal)(targetMatte - curMatte),2, MidpointRounding.AwayFromZero)) <= (decimal)0.2)
             {
                 // 必须保证冰铜品位符合要求的情况下，才能调整Si
-                if (Math.Abs(targetSiO2_Fe - curSiO2_Fe) <= 0.01)
+                if (Math.Abs(Math.Round((decimal)(targetSiO2_Fe - curSiO2_Fe),2, MidpointRounding.AwayFromZero)) <= (decimal)0.01)
                 {
                     MessageBox.Show("预测值已经满足系统精度要求，无需修正！");
                     calcprogress.enabledCloseButton();
@@ -1956,11 +2010,11 @@ namespace CCS_System
                     // 预测值偏高，降低补硅
                     if (curSiO2_Fe - targetSiO2_Fe > 0)
                     {
-                        suggestAddSi -= Math.Abs(targetSiO2_Fe - curSiO2_Fe) * 10;
+                        suggestAddSi -= Math.Abs(targetSiO2_Fe - curSiO2_Fe) * curSiO2_FeStep;
                     }
                     else
                     {
-                        suggestAddSi += Math.Abs(targetSiO2_Fe - curSiO2_Fe) * 10;
+                        suggestAddSi += Math.Abs(targetSiO2_Fe - curSiO2_Fe) * curSiO2_FeStep;
                     }
                 }
             }
@@ -1969,11 +2023,11 @@ namespace CCS_System
                 // 预测值偏高，降低氧料比
                 if (curMatte - targetMatte > 0)
                 {
-                    suggestOxyRatio -= Math.Abs(targetMatte - curMatte) * 2.5;
+                    suggestOxyRatio -= Math.Abs(targetMatte - curMatte) * curMatteStep;
                 }
                 else
                 {
-                    suggestOxyRatio += Math.Abs(targetMatte - curMatte) * 2.5;
+                    suggestOxyRatio += Math.Abs(targetMatte - curMatte) * curMatteStep;
                 }
             }
             // 将变换后的氧料比和补硅写入Excel
@@ -2012,9 +2066,12 @@ namespace CCS_System
             progressWindowChange("当前硅铁比：" + curSiO2_Fe + "，目标值：" + targetSiO2_Fe);
             progressWindowChange("当前氧料比：" + suggestOxyRatio);
             progressWindowChange("当前补硅：" + suggestAddSi);
-            if (Math.Abs(targetMatte - curMatte) < 0.2)
+            curMatteProcess.Add(curMatte);
+            curSiO2_FeProcess.Add(curSiO2_Fe);
+
+            if (Math.Abs(Math.Round((decimal)(targetMatte - curMatte), 2, MidpointRounding.AwayFromZero)) <= (decimal)0.2)
             {
-                if (Math.Abs(targetSiO2_Fe - curSiO2_Fe) <= 0.01)
+                if (Math.Abs(Math.Round((decimal)(targetSiO2_Fe - curSiO2_Fe), 2, MidpointRounding.AwayFromZero)) <= (decimal)0.01)
                 {
                     progressWindowChange("当前预测值已经满足系统精度要求，计算结束！");
                     progressWindowChange("===========计算完成===========");
@@ -2025,27 +2082,31 @@ namespace CCS_System
                 }
                 else
                 {
+                    if (ReCalcTimes > 2 && curSiO2_FeProcess[ReCalcTimes] == curSiO2_FeProcess[ReCalcTimes - 2])
+                        curSiO2_FeStep /= 2;
                     // 预测值偏高，降低补硅
                     if (curSiO2_Fe - targetSiO2_Fe > 0)
                     {
-                        suggestAddSi -= Math.Abs(targetSiO2_Fe - curSiO2_Fe) * 10;
+                        suggestAddSi -= Math.Abs(targetSiO2_Fe - curSiO2_Fe) * curSiO2_FeStep;
                     }
                     else
                     {
-                        suggestAddSi += Math.Abs(targetSiO2_Fe - curSiO2_Fe) * 10;
+                        suggestAddSi += Math.Abs(targetSiO2_Fe - curSiO2_Fe) * curSiO2_FeStep;
                     }
                 }
             }
             else
             {
+                if (ReCalcTimes > 2 && curMatteProcess[ReCalcTimes] == curMatteProcess[ReCalcTimes - 2])
+                    curMatteStep /= 2;
                 // 预测值偏高，降低氧料比
                 if (curMatte - targetMatte > 0)
                 {
-                    suggestOxyRatio -= Math.Abs(targetMatte - curMatte) * 2.5;
+                    suggestOxyRatio -= Math.Abs(targetMatte - curMatte) * curMatteStep;
                 }
                 else
                 {
-                    suggestOxyRatio += Math.Abs(targetMatte - curMatte) * 2.5;
+                    suggestOxyRatio += Math.Abs(targetMatte - curMatte) * curMatteStep;
                 }
             }
             // 将变换后的氧料比和补硅写入Excel
@@ -2550,6 +2611,18 @@ namespace CCS_System
             {
                 calc_CCS();
             }
+            if ("KALUMBILA".Equals(s))
+            {
+                calc_KALUMBILA();
+            }
+            if ("SCM".Equals(s))
+            {
+                calc_SCM();
+            }
+            if ("HRC".Equals(s))
+            {
+                calc_HRC();
+            }
             bwPartition.ReportProgress(currentitems, s);
         }
 
@@ -2606,8 +2679,11 @@ namespace CCS_System
         double p1 = 0.28, p2 = 0.48, p3 = 0.24, p4 = 0.00;
         // 分配系数迭代计算次数
         int partitionCalcTimes;
-        // 分配系数调整步长设定(2018.04从0.01改为0.03和0.03)
-        double matteStep = 0.03;
+        // 新增两个数组，记录每次迭代后的值，防止死循环
+        ArrayList matteProcess = new ArrayList();
+        ArrayList Fe3O4Process = new ArrayList();
+        // 分配系数调整步长设定(2018.04从0.01改为0.04和0.03)
+        double matteStep = 0.04;
         double Fe3O4Step = 0.03;
         // 设置冰铜调整精确度(2018.04从0.2改为0.5)
         double matteEPS = 0.5;
@@ -2632,6 +2708,8 @@ namespace CCS_System
             progressWindowChange("当前Fe3O4：" + partitionFe3O4 + "，原值：" + originalFe3O4);
             progressWindowChange("当前分配系数：" + p1.ToString("P") + "，" + p2.ToString("P") + "，"
                 + p3.ToString("P") + "，" + p4.ToString("P"));
+            matteProcess.Add(partitionMatte);
+            Fe3O4Process.Add(partitionFe3O4);
             // 先判断冰铜是否满足
             if (Math.Abs(originalMatte - partitionMatte) < matteEPS)
             {
@@ -2708,10 +2786,9 @@ namespace CCS_System
                 else
                 {
                     // Fe3O4调整步长自适应变化
-                    Fe3O4Step = Math.Abs(partitionFe3O4 - originalFe3O4) / 100;
-                    // 当差值小于2的时候，步长要变得更短；小于1的时候降进行微调
-                    if (Fe3O4Step < 0.03) Fe3O4Step /= 2;//（2018.04从Fe3O4Step /= 2 改为Fe3O4Step = 0.02）
-                    if(Fe3O4Step < 0.01) Fe3O4Step =0.01;
+                    Fe3O4Step = Math.Abs(partitionFe3O4 - originalFe3O4) / 120;
+                    // 当差值小于2的时候，步长要变得更短
+                    if (Fe3O4Step < 0.02) Fe3O4Step /= 2;//（2018.04从Fe3O4Step /= 2 改为Fe3O4Step /= 1.5）
                     // Fe3O4计算值偏高，降低N14(p1)，升高P14(p3)，变化量的百分点数值相同
                     if (partitionFe3O4 - originalFe3O4 > 0)
                     {
@@ -2727,8 +2804,8 @@ namespace CCS_System
             }
             else // 冰铜不满足要求，优先调整冰铜
             {
-                // 冰铜调整步长自适应变化，最后稳定在1%
-                matteStep = Math.Abs(partitionMatte - originalMatte) / 50;
+                // 冰铜调整步长自适应变化，最后稳定在2%
+                matteStep = Math.Abs(partitionMatte - originalMatte) / 40;
                 if (matteStep < 0.02) matteStep = 0.02;//（2018.04由0.01改为0.02）
                 // 冰铜计算值偏高，同比例降低p1,p2,p3，降低量为1%
                 if (partitionMatte - originalMatte > 0)
@@ -2786,6 +2863,8 @@ namespace CCS_System
             progressWindowChange("当前Fe3O4：" + partitionFe3O4 + "，原值：" + originalFe3O4);
             progressWindowChange("当前分配系数：" + p1.ToString("P") + "，" + p2.ToString("P") + "，"
                 + p3.ToString("P") + "，" + p4.ToString("P"));
+            matteProcess.Add(partitionMatte);
+            Fe3O4Process.Add(partitionFe3O4);
             // 调整冰铜和Fe3O4的精确度
             if (Math.Abs(originalFe3O4 - partitionFe3O4) < 0.4 || isFe3O4Complete)
             {
@@ -2876,10 +2955,16 @@ namespace CCS_System
                 else
                 {
                     // Fe3O4调整步长自适应变化
-                    Fe3O4Step = Math.Abs(partitionFe3O4 - originalFe3O4) / 100;
-                    // 当差值小于2的时候，步长要变得更短；小于1的时候降进行微调
-                    if (Fe3O4Step < 0.03) Fe3O4Step /= 2;
-                    if (Fe3O4Step < 0.01) Fe3O4Step = 0.01;
+                    Fe3O4Step = Math.Abs(partitionFe3O4 - originalFe3O4) / 120;
+                    // 当差值小于2的时候，步长要变得更短
+                    if (Fe3O4Step < 0.02) Fe3O4Step /= 2;
+                    if (partitionCalcTimes > 2)
+                    {
+                        if(Fe3O4Process[partitionCalcTimes] == Fe3O4Process[partitionCalcTimes - 2])
+                        {
+                            Fe3O4Step /= 2;
+                        }
+                    }
                     // Fe3O4计算值偏高，降低N14(p1)，升高P14(p3)，变化量的百分点数值相同
                     if (partitionFe3O4 - originalFe3O4 > 0)
                     {
@@ -2896,8 +2981,15 @@ namespace CCS_System
             else // 冰铜不满足要求，优先调整冰铜
             {
                 // 冰铜调整步长自适应变化，最后稳定在1%
-                matteStep = Math.Abs(partitionMatte - originalMatte) / 50;
+                matteStep = Math.Abs(partitionMatte - originalMatte) / 40;
                 if (matteStep < 0.02) matteStep = 0.02;//（2018.04由0.01改为0.02）
+                if (partitionCalcTimes > 2)
+                {
+                    if (matteProcess[partitionCalcTimes] == matteProcess[partitionCalcTimes - 2])
+                    {
+                        matteStep /= 2;
+                    }
+                }
                 // 冰铜计算值偏高，同比例降低p1,p2,p3，降低量为1%
                 if (partitionMatte - originalMatte > 0)
                 {
@@ -2998,7 +3090,7 @@ namespace CCS_System
         }
         #endregion
 
-        #region 12种精矿的化合物组成计算方法
+        #region 15种精矿的化合物组成计算方法
         private void calc_LUANSHYA()
         {
             // 局部变量定义
@@ -3819,6 +3911,208 @@ namespace CCS_System
             if (CCS.comp_Fe2SiO4 < 0) CCS.comp_Fe2SiO4 = 0;
             Mines.Add(CCS);
             // 改变当前完成精矿计数（2016.11.24）
+            addCurrentItems();
+        }
+        private void calc_KALUMBILA()
+        {
+            // 局部变量定义
+            double[] mink = new double[] { 45, 0, 0, 23 };
+            double[] maxk = new double[] { 60.4, 6, 9, 36 };
+            int D = 4;
+            double[,] x = new double[,] { { 0.347826087,0.666666667,0.8,0 },
+                                          { 0.304347826,0,0,0.466666667 },
+                                          { 0.347826087,0.333333333,0.2,0.533333333 } };
+            double[] y = new double[] { KALUMBILA.Cu - 0, KALUMBILA.Fe - 0, KALUMBILA.S - 0 };
+            // SOMA执行
+            SOMA soma = new SOMA(D, mink, maxk, x, y);
+            Result_K rk = soma.startMigrate();
+            double[] k = rk.K;
+            // 初始化该种矿石的化合元素成分
+            KALUMBILA.comp_CuFeS2 = k[0];
+            KALUMBILA.comp_CuS = k[1];
+            KALUMBILA.comp_Cu2S = k[2];
+            KALUMBILA.comp_FeS2 = k[3];
+            KALUMBILA.comp_K2O = 0.500;
+            KALUMBILA.comp_SiO2 = KALUMBILA.SiO2;
+            KALUMBILA.comp_Al2O3 = KALUMBILA.Al2O3;
+            KALUMBILA.comp_CaO = KALUMBILA.CaO;
+            KALUMBILA.comp_MgO = KALUMBILA.MgO;
+            // 计算实际值和模拟值的差异，调整混合成分（2018.05.07）
+            // 模拟值-实际值
+            double DiffCu = soma.yfit[0] - soma.yreal[0];
+            // 若Cu偏高，则降CuFeS2（降的量为差值*184/64），若偏低，则增Cu物相的量。
+            if (DiffCu > 0)
+            {
+                KALUMBILA.comp_CuFeS2 -= DiffCu * 184 / 64;
+                k[0] = KALUMBILA.comp_CuFeS2;
+            }
+            else
+                KALUMBILA.comp_Cu -= DiffCu;// 偏低时，DiffCu为负数
+            // 重新计算S，Fe的拟合情况
+            soma.yfit[2] = soma.calcFit(k, x, 2);
+            soma.yfit[1] = soma.calcFit(k, x, 1);
+            // 计算S的差值
+            double DiffS = soma.yfit[2] - soma.yreal[2];
+            // 若S偏高，则降FeS2的量（降的量为差值*120/64），若S偏低，则增加S2（增量为差值）
+            if (DiffS > 0)
+            {
+                // 自己理解：降低了FeS2，将会同步降低Fe，降的量为上述差值*120/56
+                if (KALUMBILA.comp_FeS2 > DiffS * 120 / 64)
+                {
+                    // 大于的话才能减，小于等于置为0
+                    KALUMBILA.comp_FeS2 -= DiffS * 120 / 64;
+                    soma.yfit[1] -= DiffS * 56 / 64;
+                }
+                else
+                {
+                    KALUMBILA.comp_FeS2 = 0;
+                    // FeS2比差值要小，那么就把FeS2变成0为止，此时的差值便为FeS2的量
+                    soma.yfit[1] -= KALUMBILA.comp_FeS2 * 56 / 64;
+                }
+            }
+            else
+            {
+                KALUMBILA.comp_S2 -= DiffS;// 偏低时，DiffS为负数
+                // MessageBox.Show("【S调整】KALUMBILA的S2已经增加：" + (-1) * DiffS);
+            }
+            // 最后修正Fe（2018.5.7）
+            double DiffFe = soma.yfit[1] - soma.yreal[1];
+            // 若Fe偏高，则降FeS2的量（降的量为差值*120/56），若Fe偏低，则增加Fe物相的量。
+            // 此时S偏低，则增加S2（增量为差值）
+            if (DiffFe < 0)
+                KALUMBILA.comp_Fe -= DiffFe;
+            else
+            {
+                KALUMBILA.comp_FeS2 -= DiffFe * 120 / 56;
+                // 不论S2是否为0，前面都已经调好了S2，这次降低FeS2必然使S偏低，因此直接加上即可。
+                KALUMBILA.comp_S2 += DiffFe * 64 / 56;
+            }
+            Mines.Add(KALUMBILA);
+            // 改变当前完成精矿计数（2016.11.24）
+            addCurrentItems();
+        }
+        private void calc_SCM()
+        {
+            // 局部变量定义
+            double[] mink = new double[] { 40, 0, 0, 0, 0 };
+            double[] maxk = new double[] { 51, 6, 5, 8, 6 };
+            int D = 5;
+            double[,] x = new double[,] { { 0.347826087,0.666666667,0.8,0,0 },
+                                          { 0.304347826,0,0,0.466666667,0.7 },
+                                          { 0.347826087,0.333333333,0.2,0.533333333,0 } };
+            double[] y = new double[] { SCM.Cu - 6.3, SCM.Fe - 0, SCM.S - 0 };
+            // SOMA执行
+            SOMA soma = new SOMA(D, mink, maxk, x, y);
+            Result_K rk = soma.startMigrate();
+            double[] k = rk.K;
+            SCM.comp_CuFeS2 = k[0];
+            SCM.comp_CuS = k[1];
+            SCM.comp_Cu2S = k[2];
+            SCM.comp_FeS2 = k[3];
+            SCM.comp_Fe2O3 = k[4];
+            SCM.comp_Al2O3 = SCM.Al2O3 - 0.9;
+            SCM.comp_Mg6Si8O20_OH_4 = SCM.MgO * 3.15;
+            SCM.comp_SiO2 = SCM.SiO2 - 3.17 - SCM.comp_Mg6Si8O20_OH_4 * 0.635;
+            SCM.comp_CaO = SCM.CaO;
+            SCM.comp_KAlSi3O8 = 4.900;
+            SCM.comp_Cu = 6.300;
+            // 防负数判定
+            if (SCM.comp_SiO2 < 0) SCM.comp_SiO2 = 0;
+            if (SCM.comp_Al2O3 < 0) SCM.comp_Al2O3 = 0;
+            // 计算实际值和模拟值的差异，调整混合成分（2018.5.7）
+            // 模拟值-实际值
+            double DiffCu = soma.yfit[0] - soma.yreal[0];
+            // 若Cu偏高，则降Cu（降的量为差值），若偏低，则增Cu物相的量。
+            SCM.comp_Cu -= DiffCu;// 不论偏高还是偏低，符号都将根据DiffCu的值自动改变
+            double DiffS = soma.yfit[2] - soma.yreal[2];
+            // 若S偏高，则降FeS2的量（降的量为差值 * 120 / 64），若S偏低，则增加S2（增量为差值）
+            if (DiffS > 0)
+            {
+                // 降低了FeS2，将会同步降低Fe，降的量为上述差值*56/64
+                if (SCM.comp_FeS2 > DiffS * 120 / 64)
+                {
+                    // 大于的话才能减，小于等于置为0
+                    SCM.comp_FeS2 -= DiffS * 120 / 64;
+                    // 同步降低Fe
+                    soma.yfit[1] -= DiffS * 56 / 64;
+                }
+                else
+                {
+                    SCM.comp_FeS2 = 0;
+                    // FeS2比差值要小，那么就把FeS2变成0为止，此时的差值便为FeS2的量
+                    soma.yfit[1] -= SCM.comp_FeS2 * 56 / 64;
+                }
+            }
+            else
+                SCM.comp_S2 -= DiffS;// 偏低时，DiffS为负数
+            double DiffFe = soma.yfit[1] - soma.yreal[1];
+            // 若Fe偏高，则降Fe2O3（降的量为差值 * 160 / 112），若Fe偏低，则增加Fe2O3（增的量为差值 * 160 / 112）
+            SCM.comp_Fe2O3 -= DiffFe * 160 / 112;// 不论偏高还是偏低，DiffFe的符号都会自动变化
+            if (SCM.comp_Fe2O3 < 0) SCM.comp_Fe2O3 = 0;
+            Mines.Add(SCM);
+            // 改变当前完成精矿计数（2018.5.7）
+            addCurrentItems();
+        }
+        private void calc_HRC()
+        {
+            // 局部变量定义
+            double[] mink = new double[] { 40, 0, 0, 0, 0 };
+            double[] maxk = new double[] { 51, 6, 5, 8, 6 };
+            int D = 5;
+            double[,] x = new double[,] { { 0.347826087,0.666666667,0.8,0,0 },
+                                          { 0.304347826,0,0,0.466666667,0.7 },
+                                          { 0.347826087,0.333333333,0.2,0.533333333,0 } };
+            double[] y = new double[] { HRC.Cu - 6.3, HRC.Fe - 0, HRC.S - 0 };
+            // SOMA执行
+            SOMA soma = new SOMA(D, mink, maxk, x, y);
+            Result_K rk = soma.startMigrate();
+            double[] k = rk.K;
+            HRC.comp_CuFeS2 = k[0];
+            HRC.comp_CuS = k[1];
+            HRC.comp_Cu2S = k[2];
+            HRC.comp_FeS2 = k[3];
+            HRC.comp_Fe2O3 = k[4];
+            HRC.comp_Al2O3 = HRC.Al2O3 - 0.9;
+            HRC.comp_Mg6Si8O20_OH_4 = HRC.MgO * 3.15;
+            HRC.comp_SiO2 = HRC.SiO2 - 3.17 - HRC.comp_Mg6Si8O20_OH_4 * 0.635;
+            HRC.comp_CaO = HRC.CaO;
+            HRC.comp_KAlSi3O8 = 4.900;
+            HRC.comp_Cu = 6.300;
+            // 防负数判定
+            if (HRC.comp_SiO2 < 0) HRC.comp_SiO2 = 0;
+            if (HRC.comp_Al2O3 < 0) HRC.comp_Al2O3 = 0;
+            // 计算实际值和模拟值的差异，调整混合成分（2018.5.7）
+            // 模拟值-实际值
+            double DiffCu = soma.yfit[0] - soma.yreal[0];
+            // 若Cu偏高，则降Cu（降的量为差值），若偏低，则增Cu物相的量。
+            HRC.comp_Cu -= DiffCu;// 不论偏高还是偏低，符号都将根据DiffCu的值自动改变
+            double DiffS = soma.yfit[2] - soma.yreal[2];
+            // 若S偏高，则降FeS2的量（降的量为差值 * 120 / 64），若S偏低，则增加S2（增量为差值）
+            if (DiffS > 0)
+            {
+                // 降低了FeS2，将会同步降低Fe，降的量为上述差值*56/64
+                if (HRC.comp_FeS2 > DiffS * 120 / 64)
+                {
+                    // 大于的话才能减，小于等于置为0
+                    HRC.comp_FeS2 -= DiffS * 120 / 64;
+                    // 同步降低Fe
+                    soma.yfit[1] -= DiffS * 56 / 64;
+                }
+                else
+                {
+                    HRC.comp_FeS2 = 0;
+                    // FeS2比差值要小，那么就把FeS2变成0为止，此时的差值便为FeS2的量
+                    soma.yfit[1] -= HRC.comp_FeS2 * 56 / 64;
+                }
+            }
+            else
+                HRC.comp_S2 -= DiffS;// 偏低时，DiffS为负数
+            double DiffFe = soma.yfit[1] - soma.yreal[1];
+            // 若Fe偏高，则降Fe2O3（降的量为差值 * 160 / 112），若Fe偏低，则增加Fe2O3（增的量为差值 * 160 / 112）
+            HRC.comp_Fe2O3 -= DiffFe * 160 / 112;// 不论偏高还是偏低，DiffFe的符号都会自动变化
+            if (HRC.comp_Fe2O3 < 0) HRC.comp_Fe2O3 = 0;
+            Mines.Add(HRC);
+            // 改变当前完成精矿计数（2018.5.7）
             addCurrentItems();
         }
         #endregion

@@ -179,6 +179,9 @@
             this.label6 = new System.Windows.Forms.Label();
             this.label5 = new System.Windows.Forms.Label();
             this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.checkBox16 = new System.Windows.Forms.CheckBox();
+            this.checkBox17 = new System.Windows.Forms.CheckBox();
+            this.checkBox18 = new System.Windows.Forms.CheckBox();
             this.groupBox1.SuspendLayout();
             this.groupBox7.SuspendLayout();
             this.groupBox2.SuspendLayout();
@@ -254,7 +257,7 @@
             // 
             // mine_recommend
             // 
-            this.mine_recommend.Location = new System.Drawing.Point(41, 462);
+            this.mine_recommend.Location = new System.Drawing.Point(41, 470);
             this.mine_recommend.Name = "mine_recommend";
             this.mine_recommend.Size = new System.Drawing.Size(100, 40);
             this.mine_recommend.TabIndex = 51;
@@ -323,7 +326,7 @@
             // button5
             // 
             this.button5.Enabled = false;
-            this.button5.Location = new System.Drawing.Point(156, 462);
+            this.button5.Location = new System.Drawing.Point(156, 470);
             this.button5.Name = "button5";
             this.button5.Size = new System.Drawing.Size(100, 40);
             this.button5.TabIndex = 60;
@@ -333,6 +336,9 @@
             // 
             // groupBox7
             // 
+            this.groupBox7.Controls.Add(this.checkBox18);
+            this.groupBox7.Controls.Add(this.checkBox17);
+            this.groupBox7.Controls.Add(this.checkBox16);
             this.groupBox7.Controls.Add(this.checkBox15);
             this.groupBox7.Controls.Add(this.checkBox14);
             this.groupBox7.Controls.Add(this.checkBox13);
@@ -350,7 +356,7 @@
             this.groupBox7.Controls.Add(this.checkBox10);
             this.groupBox7.Location = new System.Drawing.Point(20, 274);
             this.groupBox7.Name = "groupBox7";
-            this.groupBox7.Size = new System.Drawing.Size(262, 167);
+            this.groupBox7.Size = new System.Drawing.Size(262, 181);
             this.groupBox7.TabIndex = 58;
             this.groupBox7.TabStop = false;
             this.groupBox7.Text = "精矿种类（至少选择1项）";
@@ -1579,6 +1585,36 @@
             this.label5.TabIndex = 0;
             this.label5.Text = "下料仓1";
             // 
+            // checkBox16
+            // 
+            this.checkBox16.AutoSize = true;
+            this.checkBox16.Location = new System.Drawing.Point(11, 159);
+            this.checkBox16.Name = "checkBox16";
+            this.checkBox16.Size = new System.Drawing.Size(78, 16);
+            this.checkBox16.TabIndex = 61;
+            this.checkBox16.Text = "KALUMBILA";
+            this.checkBox16.UseVisualStyleBackColor = true;
+            // 
+            // checkBox17
+            // 
+            this.checkBox17.AutoSize = true;
+            this.checkBox17.Location = new System.Drawing.Point(97, 159);
+            this.checkBox17.Name = "checkBox17";
+            this.checkBox17.Size = new System.Drawing.Size(84, 16);
+            this.checkBox17.TabIndex = 62;
+            this.checkBox17.Text = "GREATSTONE";
+            this.checkBox17.UseVisualStyleBackColor = true;
+            // 
+            // checkBox18
+            // 
+            this.checkBox18.AutoSize = true;
+            this.checkBox18.Location = new System.Drawing.Point(187, 159);
+            this.checkBox18.Name = "checkBox18";
+            this.checkBox18.Size = new System.Drawing.Size(42, 16);
+            this.checkBox18.TabIndex = 63;
+            this.checkBox18.Text = "HRC";
+            this.checkBox18.UseVisualStyleBackColor = true;
+            // 
             // ExpertSystem
             // 
             this.AutoScaleDimensions = new System.Drawing.SizeF(6F, 12F);
@@ -1758,5 +1794,8 @@
         private System.Windows.Forms.Timer timer1;
         private System.Windows.Forms.Button predict;
         private System.Windows.Forms.Button Export_file;
+        private System.Windows.Forms.CheckBox checkBox18;
+        private System.Windows.Forms.CheckBox checkBox17;
+        private System.Windows.Forms.CheckBox checkBox16;
     }
 }
